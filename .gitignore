@@ -1,0 +1,5 @@
+jp-eng_dict/*
+mecab_dict/*
+*.sh
+.vscode/
+__pycache__/
