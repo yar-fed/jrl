@@ -5,15 +5,16 @@ from wx.lib.agw.aui.aui_utilities import BitmapFromBits, StepColour, IndentPress
 from wx.lib.agw.aui.aui_utilities import GetBaseColour, DrawMACCloseButton, LightColour, TakeScreenShot
 from wx.lib.agw.aui.aui_utilities import CopyAttributes
 from wx.lib.agw.aui.tabart import AuiCommandCapture
-from wx.lib.agw.aui.tabart import AuiDefaultTabArt
+from wx.lib.agw.aui.tabart import VC71TabArt
 
-class VC71TabArt(AuiDefaultTabArt):
+
+class JRLTabArt(VC71TabArt):
     """ A class to draw tabs using the Visual Studio 2003 (VC71) style. """
 
     def __init__(self):
         """ Default class constructor. """
 
-        AuiDefaultTabArt.__init__(self)
+        VC71TabArt.__init__(self)
         butBitmap = wx.Bitmap()
         butBitmap.LoadFile("assets/close.png")
         butBitmap_h = wx.Bitmap()
@@ -25,18 +26,6 @@ class VC71TabArt(AuiDefaultTabArt):
 
         self.vertical_border_padding = 0
         self._selected_font = self._normal_font
-
-
-    def Clone(self):
-        """ Clones the art object. """
-
-        art = type(self)()
-        art.SetNormalFont(self.GetNormalFont())
-        art.SetSelectedFont(self.GetSelectedFont())
-        art.SetMeasuringFont(self.GetMeasuringFont())
-
-        art = CopyAttributes(art, self)
-        return art
 
 
     def DrawTab(self, dc, wnd, page, in_rect, close_button_state, paint_control=False):
@@ -80,6 +69,7 @@ class VC71TabArt(AuiDefaultTabArt):
 
         dc.SetPen((page.active and [wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT))] or \
                    [wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))])[0])
+        dc.SetPen(wx.Pen(self._base_colour, style=wx.PENSTYLE_TRANSPARENT))
         dc.SetBrush((page.active and [wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DFACE))] or \
                      [wx.TRANSPARENT_BRUSH])[0])
 
@@ -106,6 +96,7 @@ class VC71TabArt(AuiDefaultTabArt):
 
             # We dont draw a rectangle for non selected tabs, but only
             # vertical line on the right
+            dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DFACE)))
             blackLineY1 = (agwFlags & AUI_NB_BOTTOM and [self.vertical_border_padding + 2] or \
                            [self.vertical_border_padding + 1])[0]
             blackLineY2 = tab_height - 5
@@ -264,11 +255,13 @@ class VC71TabArt(AuiDefaultTabArt):
         # draw base lines
 
         dc.SetPen(self._border_pen)
+        dc.SetPen(wx.Pen(self._base_colour, style=wx.PENSTYLE_TRANSPARENT))
         y = rect.GetHeight()
         w = rect.GetWidth()
 
         if agwFlags & AUI_NB_BOTTOM:
             dc.SetBrush(wx.Brush(self._background_bottom_colour))
+            # dc.SetBrush(wx.Brush(self._background_top_colour))
             dc.DrawRectangle(-1, 0, w+2, 4)
 
         # TODO: else if (agwFlags & AUI_NB_LEFT)
@@ -316,6 +309,83 @@ class VC71TabArt(AuiDefaultTabArt):
 
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(self._focusPen)
+            dc.SetPen(wx.Pen(self._base_colour, style=wx.PENSTYLE_TRANSPARENT))
             # dc.DrawRoundedRectangleRect(focusRect, 2)
     
-    
+    def DrawButton(self, dc, wnd, in_rect, button, orientation):
+        """
+        Draws a button on the tab or on the tab area, depending on the button identifier. 
+        :param `dc`: a :class:`DC` device context;
+        :param `wnd`: a :class:`Window` instance object;
+        :param Rect `in_rect`: rectangle the tab should be confined to;
+        :param `button`: an instance of the button class;
+        :param integer `orientation`: the tab orientation.
+        """
+
+        bitmap_id, button_state = button.id, button.cur_state
+        
+        if bitmap_id == AUI_BUTTON_CLOSE:
+            if button_state & AUI_BUTTON_STATE_DISABLED:
+                bmp = self._disabled_close_bmp
+            elif button_state & AUI_BUTTON_STATE_HOVER:
+                bmp = self._hover_close_bmp
+            elif button_state & AUI_BUTTON_STATE_PRESSED:
+                bmp = self._pressed_close_bmp
+            else:
+                bmp = self._active_close_bmp
+
+        elif bitmap_id == AUI_BUTTON_LEFT:
+            if button_state & AUI_BUTTON_STATE_DISABLED:
+                bmp = self._disabled_left_bmp
+            else:
+                bmp = self._active_left_bmp
+
+        elif bitmap_id == AUI_BUTTON_RIGHT:
+            if button_state & AUI_BUTTON_STATE_DISABLED:
+                bmp = self._disabled_right_bmp
+            else:
+                bmp = self._active_right_bmp
+
+        elif bitmap_id == AUI_BUTTON_WINDOWLIST:
+            if button_state & AUI_BUTTON_STATE_DISABLED:
+                bmp = self._disabled_windowlist_bmp
+            else:
+                bmp = self._active_windowlist_bmp
+
+        else:
+            if button_state & AUI_BUTTON_STATE_DISABLED:
+                bmp = button.dis_bitmap
+            else:
+                bmp = button.bitmap
+                
+        if not bmp.IsOk():
+            return
+
+        rect = wx.Rect(*in_rect)
+        
+        if orientation == wx.LEFT:
+        
+            rect.SetX(in_rect.x)
+            rect.SetY(((in_rect.y + in_rect.height)/2) - (bmp.GetHeight()/2))
+            rect.SetWidth(bmp.GetWidth())
+            rect.SetHeight(bmp.GetHeight())
+        
+        else:
+            if button.location == wx.CENTER:
+                rect = wx.Rect(in_rect.x + in_rect.width+2,
+                            ((in_rect.height)/2) - (bmp.GetHeight()/2)-1,
+                            bmp.GetWidth(), bmp.GetHeight())
+            else:
+                rect = wx.Rect(in_rect.x + in_rect.width - bmp.GetWidth(),
+                           ((in_rect.y + in_rect.height)/2) - (bmp.GetHeight()/2),
+                           bmp.GetWidth(), bmp.GetHeight())
+        #TODO revert calling JRLNotebook from MyNotebook.py
+        rect = IndentPressedBitmap(rect, button_state)
+        dc.DrawBitmap(bmp, rect.x, rect.y, True)
+
+        out_rect = rect
+
+        if bitmap_id == AUI_BUTTON_RIGHT:
+            self._buttonRect = wx.Rect(rect.x, rect.y, 30, rect.height)
+        
+        return out_rect

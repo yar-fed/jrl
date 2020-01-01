@@ -3,3 +3,5 @@ mecab_dict/*
 *.sh
 .vscode/
 __pycache__/
+gui/__pycache__/
+python3env*/
