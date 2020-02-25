@@ -47,18 +47,18 @@ class Tab(wx.Panel):
             event.Skip()
             return
         self.OnAccelReturn(event)
-        # self._tc.Remove(self._tc.GetInsertionPoint()-1, self._tc.GetInsertionPoint())
+
     def OnAccelReturn(self, event):
         if event.AltDown():
             print("OnAccelAltReturn")
-            # self.process(self._tc)
+            self.process(self._tc)
         elif event.ControlDown():
             print("OnAccelCtrlReturn")
             self.OnKillFocus(event)
             self._dictwin.SetFocus()
         elif event.ShiftDown():
             print("OnAccelShiftReturn")
-            # self.process(self._tc)
+            self.process(self._tc)
     
     def OnPageLoaded(self, event):
         self._dictwin.RunScript(self.script)
@@ -99,9 +99,3 @@ class Tab(wx.Panel):
     
     def process(self, textctrl : wx.TextCtrl):
         text = textctrl.GetValue()
-        for token in text.split():
-            textctrl.BeginURL(token)
-            textctrl.WriteText(token)
-            textctrl.EndURL()
-            textctrl.WriteText(" ")
-        textctrl.Undo()

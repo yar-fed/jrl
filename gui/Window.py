@@ -4,7 +4,7 @@ import wx.lib.agw.aui.dockart as da
 class MainFrame(wx.Frame):
 
     def __init__(self, parent, title, tabart):#, dockart):
-        super(MainFrame, self).__init__(parent, title=title, size=wx.Size(800, 600))
+        super(MainFrame, self).__init__(parent, title=title, size=wx.Size(800, 600), pos=wx.Point(300, 400))
         self.basecolor = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
         self.tabart = tabart
         self.dockart = da.AuiDefaultDockArt()
@@ -12,11 +12,12 @@ class MainFrame(wx.Frame):
         self.dockart.SetMetric(aui.AUI_DOCKART_SASH_SIZE, 3)
         self.dockart.SetMetric(aui.AUI_DOCKART_PANE_BORDER_SIZE, 0)
         self.dockart.SetColor(aui.AUI_DOCKART_SASH_COLOUR, wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
+        self.dockart.SetColor(aui.AUI_DOCKART_HINT_WINDOW_COLOUR, wx.Colour(255,255,255))
         # self.dockart.SetColor(aui.AUI_DOCKART_BORDER_COLOUR, wx.Colour(0,0,0,0))
         self.initUI()
     
     def initUI(self):
-        self._nb = JRLNotebook(self)
+        self._nb = JRLNotebook(self, agwStyle= aui.AUI_NB_DEFAULT_STYLE | aui.AUI_NB_CLOSE_ON_ALL_TABS | aui.AUI_NB_TAB_FLOAT | aui.AUI_NB_TAB_FIXED_WIDTH)
         self._nb.SetArtProvider(self.tabart)
         self._nb.GetAuiManager().SetArtProvider(self.dockart)
         

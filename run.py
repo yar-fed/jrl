@@ -1,18 +1,16 @@
 #!./python3env/bin/python3
 import wx
-import gui.MyTabArt
-# import gui.MyDockArt
+import gui.JRLTabArt
 import wx.lib.agw.aui.dockart as da
 import gui.Window
-import json
+import json, os
 
 def main():
-    json
+    os.environ["GDK_BACKEND"]="x11"
     app = wx.App()
-    tabart = gui.MyTabArt.JRLTabArt()
+    tabart = gui.JRLTabArt.JRLTabArt()
     tabart.SetSelectedFont(tabart.GetNormalFont())
-    # dockart = da.AuiDefaultDockArt()
-    win = gui.Window.MainFrame(None, "JRL", tabart=tabart)#, dockart=dockart)
+    win = gui.Window.MainFrame(None, "JRL", tabart=tabart)
     win.Show()
     app.MainLoop()
 
