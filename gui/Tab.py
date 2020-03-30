@@ -6,7 +6,7 @@ from .PageFactory import PageFactory
 
 class Tab(wx.Panel):
     
-    def __init__(self, parent : JRLNotebook, wid=wx.ID_ANY):
+    def __init__(self, parent : JRLNotebook, wid=wx.NewId()):
         wx.Panel.__init__(self, parent, wid)
         
         self._mgr = aui.AuiManager()
@@ -14,12 +14,12 @@ class Tab(wx.Panel):
         self._mgr.SetMasterManager(self.GetParent().GetAuiManager())
         self._mgr.SetArtProvider(parent.GetParent().dockart)
         
-        with open("/home/yaroslav/Documents/Git_Projects/JRL/gui/setuphoverlinks.js", mode="r") as js:
-            self.script = js.read()
-        self.pf = PageFactory()
+        # with open("gui/setuphoverlinks.js", mode="r") as js:
+        #     self.script = js.read()
+        self.pf = PageFactory(self)
         self._dictwin = html.WebView.New(self)
-        self._dictwin.SetPage(self.pf.GetPage(),f"file:{self.GetId()}.html")
-        self._dictwin.RunScript(self.script)
+        self._dictwin.SetPage(self.pf.GetPage(),f"file://{self.GetId()}/index.html")
+        # self._dictwin.RunScript(self.script)
         
         self._tc = wx.TextCtrl(self, wx.ID_ANY, "CCC",
                     style=wx.TE_BESTWRAP|wx.NO_BORDER|wx.TE_MULTILINE)#|wx.TE_PROCESS_ENTER)
@@ -31,8 +31,8 @@ class Tab(wx.Panel):
         self._tc.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus, self._tc)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnAccelReturnDown, self._tc)
-        self._dictwin.Bind(html.EVT_WEBVIEW_LOADED, self.OnPageLoaded)
-        self._dictwin.Bind(html.EVT_WEBVIEW_NAVIGATING, self.OnURLHoverStart)
+        # self._dictwin.Bind(html.EVT_WEBVIEW_LOADED, self.OnPageLoaded)
+        # self._dictwin.Bind(html.EVT_WEBVIEW_NAVIGATING, self.OnURLHoverStart)
         self._dictwin.Bind(html.EVT_WEBVIEW_NAVIGATING, self.OnURL)
     
     def OnClose(self, event):
@@ -60,20 +60,24 @@ class Tab(wx.Panel):
             print("OnAccelShiftReturn")
             self.process(self._tc)
     
-    def OnPageLoaded(self, event):
-        self._dictwin.RunScript(self.script)
+    # def OnPageLoaded(self, event):
+    #     self._dictwin.RunScript(self.script)
 
     def OnURL(self, event):
         url = event.GetURL()
         if "EVT/HOVER_EVENT_START/" in url:
             self.OnURLHoverStart(url)
             event.Veto()
+            return
         elif "EVT/HOVER_EVENT_END/" in url:
             self.OnURLHoverEnd(url)
             event.Veto()
-        elif "file:" == url[:5]:
+            return
+        elif f"file://{self.GetId()}/words/" in url:
             self.OnURLClick(url)
             event.Veto()
+            return
+        event.Allow()
         return
 
     def OnKillFocus(self, event):
@@ -90,12 +94,17 @@ class Tab(wx.Panel):
         self._mgr.Update()
     
     def OnURLClick(self, url):
-        print("OnURLClick")
-        self._dictwin.LoadURL("file:testframe.html")
-    def OnURLHoverStart(self, url):
-        print("OnURLHoverStart")
-    def OnURLHoverEnd(self, url):
-        print("OnURLHoverEnd")
+        print(f"OnURLClick {url}")
+        # self._dictwin.LoadURL("file:testframe.html")
+    # def OnURLHoverStart(self, url):
+    #     print("OnURLHoverStart")
+    # def OnURLHoverEnd(self, url):
+    #     print("OnURLHoverEnd")
     
     def process(self, textctrl : wx.TextCtrl):
         text = textctrl.GetValue()
+        p = self.pf.GetPage(text=text)
+        print(p)
+        self._dictwin.SetPage(p,f"file://{self.GetId()}/index.html")
+        # self._dictwin.RunScript(self.script)
+        
