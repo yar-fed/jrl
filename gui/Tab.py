@@ -20,7 +20,11 @@ class Tab(wx.Panel):
         self._dictwin = html.WebView.New(self)
         self._dictwin.SetPage(self.pf.GetPage(),f"file://{self.GetId()}/index.html")
         
-        self._tc = wx.TextCtrl(self, wx.ID_ANY, "食べる漢字",
+        self._tc = wx.TextCtrl(self, wx.ID_ANY, """衣織ちゃんがオススメするマンガは現在ジャンプで連載されてる、アクタージュだってさ
+俺、最初読んでやめちゃったけどまた読もうかな～
+オススメらしいから握手会の時とかの話題にはいいかもね
+ホント、マンガ好きだね～
+親近感あるわ～""",
                     style=wx.TE_BESTWRAP|wx.NO_BORDER|wx.TE_MULTILINE)
         
         self._mgr.AddPane(self._tc, aui.AuiPaneInfo().CenterPane())
@@ -59,13 +63,11 @@ class Tab(wx.Panel):
         return
 
     def OnKillFocus(self, event):
-        print("OnKillFocus")
         self._mgr.GetPaneByWidget(self._tc).Top()
         self._mgr.GetPaneByWidget(self._dictwin).Center()
         self._mgr.Update()
     
     def OnSetFocus(self, event):
-        print("OnSetFocus")
         self._mgr.GetPaneByWidget(self._tc).Center()
         self._mgr.GetPaneByWidget(self._dictwin).Bottom()
         self._mgr.Update()
@@ -81,6 +83,5 @@ class Tab(wx.Panel):
     def process(self, textctrl : wx.TextCtrl):
         text = textctrl.GetValue()
         p = self.pf.GetPage(text=text)
-        print(p)
         self._dictwin.SetPage(p,f"file://{self.GetId()}/index.html")
         
